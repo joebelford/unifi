@@ -1,0 +1,41 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: unifi
+  labels:
+    app: unifi
+  annotations:
+    io.cilium/lb-ipam-ips: 10.0.100.100
+spec:
+  selector:
+    app: unifi
+  ports:
+    - port: 8443
+      targetPort: https-web
+      name: https-web
+    - port: 8080
+      targetPort: http-web
+      name: http-web
+    - port: 3478
+      targetPort: udp-3478
+      name: udp-3478
+    - port: 10001
+      targetPort: udp-10001
+      name: udp-10001
+    - port: 1900
+      targetPort: udp-1900
+      name: udp-1900
+    - port: 8843
+      targetPort: tcp-8843
+      name: tcp-8843
+    - port: 8880
+      targetPort: tcp-8880
+      name: tcp-8880
+    - port: 6789
+      targetPort: tcp-6789
+      name: tcp-6789
+    - port: 5514
+      targetPort: udp-5514
+      name: udp-5514
+  type: LoadBalancer

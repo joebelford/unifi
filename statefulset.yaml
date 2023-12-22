@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: unifi
+  labels:
+    app: unifi
+spec:
+  serviceName: unifi
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unifi
+  template:
+    metadata:
+      labels:
+        app: unifi
+    spec:
+      volumes:
+        - name: mongodb-init-scripts
+          configMap:
+            name: mongodb-init-scripts
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
+        - name: unifi-data
+          persistentVolumeClaim:
+            claimName: unifi-pvc
+      containers:
+        - name: mongo
+          image: mongo:4.4.26
+          # env:
+          #   - name: MONGO_INITDB_DATABASE
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: mongo-env
+          #         key: MONGO_DBNAME
+          #   - name: MONGO_INITDB_ROOT_USERNAME
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: mongo-env
+          #         key: MONGO_USER
+          #   - name: MONGO_INITDB_ROOT_PASSWORD
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: mongo-env
+          #         key: MONGO_PASS
+          volumeMounts:
+            - name: mongodb-init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+            - name: mongodb-data
+              mountPath: /data/db
+          livenessProbe:
+            exec:
+              command:
+                - mongo
+                - --disableImplicitSessions
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - mongo
+                - --disableImplicitSessions
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+        - name: unifi
+          image: lscr.io/linuxserver/unifi-network-application:latest
+          env:
+            - name: MONGO_DBNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-env
+                  key: MONGO_DBNAME
+            - name: MONGO_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-env
+                  key: MONGO_USER
+            - name: MONGO_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-env
+                  key: MONGO_PASS
+            - name: MONGO_HOST
+              value: localhost
+            - name: MONGO_PORT
+              value: "27017"
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: US/Eastern
+            # MEM_LIMIT: 1024 #optional
+            # MEM_STARTUP: 1024 #optional
+            # MONGO_TLS: false #optional
+            # MONGO_AUTHSOURCE: "" #optional
+          volumeMounts:
+            - name: unifi-data
+              mountPath: /config
+          ports:
+            - containerPort: 8443
+              name: https-web
+            - containerPort: 8080
+              name: http-web
+            - containerPort: 3478
+              protocol: UDP
+              name: udb-3478
+            - containerPort: 10001
+              protocol: UDP
+              name: udp-10001
+            - containerPort: 1900
+              protocol: UDP
+              name: udp-1900
+            - containerPort: 8843
+              name: tcp-8843
+            - containerPort: 8880
+              name: tcp-8880
+            - containerPort: 6789
+              name: tcp-6789
+            - containerPort: 5514
+              protocol: UDP
+              name: udp-5514

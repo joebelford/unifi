@@ -1,0 +1,10 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  labels:
+    kubernetes.io/metadata.name: unifi
+  name: unifi
+spec:
+  finalizers:
+    - kubernetes

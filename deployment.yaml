@@ -1,0 +1,81 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: unifi
+spec:
+  serviceName: unifi
+  selector:
+    matchLabels:
+      app: unifi
+  template:
+    metadata:
+      labels:
+        app: unifi
+    spec:
+      containers:
+        - name: unifi
+          image: lscr.io/linuxserver/unifi-network-application:latest
+          resources: {}
+          env:
+            - name: MONGO_DBNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-env
+                  key: MONGO_DBNAME
+            - name: MONGO_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-env
+                  key: MONGO_USER
+            - name: MONGO_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-env
+                  key: MONGO_PASS
+            - name: MONGO_HOST
+              value: mongo
+            - name: MONGO_PORT
+              value: "27017"
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: US/Eastern
+            # MEM_LIMIT: 1024 #optional
+            # MEM_STARTUP: 1024 #optional
+            # MONGO_TLS: false #optional
+            # MONGO_AUTHSOURCE: "" #optional
+          ports:
+            - containerPort: 8443
+              name: https-web
+            - containerPort: 8080
+              name: http-web
+            - containerPort: 3478
+              protocol: UDP
+              name: udb-3478
+            - containerPort: 10001
+              protocol: UDP
+              name: udp-10001
+            - containerPort: 1900
+              protocol: UDP
+              name: udp-1900
+            - containerPort: 8843
+              name: tcp-8843
+            - containerPort: 8880
+              name: tcp-8880
+            - containerPort: 6789
+              name: tcp-6789
+            - containerPort: 5514
+              protocol: UDP
+              name: udp-5514
+          # - 8443:8443
+          # - 3478:3478/udp
+          # - 10001:10001/udp
+          # - 8080:8080
+          # - 1900:1900/udp # optional
+          # - 8843:8843 # optional
+          # - 8880:8880 # optional
+          # - 6789:6789 # optional
+          # - 5514:5514/udp # optional

@@ -1,0 +1,19 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - persistent-volume.yaml
+  - persistent-volume-claim.yaml
+  - statefulset.yaml
+  - service.yaml
+namespace: unifi
+configMapGenerator:
+  - name: mongodb-init-scripts
+    files:
+      - init-mongo.js
+secretGenerator:
+  - name: mongo-env
+    envs:
+      - .env.secret
+    type: Opaque
