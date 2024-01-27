@@ -1,0 +1,12 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: unifi
+  annotations:
+    'backstage.io/kubernetes-id': unifi
+    'backstage.io/kubernetes-namespace': unifi
+spec:
+  type: service
+  lifecycle: experimental
+  owner: guests

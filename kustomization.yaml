@@ -8,6 +8,13 @@ resources:
   - statefulset.yaml
   - service.yaml
 namespace: unifi
+labels:
+  - pairs:
+      backstage.io/kubernetes-id: unifi
+    includeTemplates: true
+commonLabels:
+  app: unifi
+
 configMapGenerator:
   - name: mongodb-init-scripts
     files:
